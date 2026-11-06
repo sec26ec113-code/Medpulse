@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MedPulse: 3 Portals</title>
+<style>
+:root{--b1:#d6ecfa;--b2:#b5dcf5;--y1:#fff3bf;--y2:#ffe58a;--card:#ffffffd9;--ink:#12324a;--mut:#4d6b82;--red:#d6453d;--grn:#1f9d6a;--ln:#a9cfe8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--b1:#16293a;--b2:#21405a;--y1:#3a3416;--y2:#6b5e1d;--card:#1c2a38d9;--ink:#e8f3fb;--mut:#9db8cc;--ln:#35566f}}
+:root[data-theme="dark"]{--b1:#16293a;--b2:#21405a;--y1:#3a3416;--y2:#6b5e1d;--card:#1c2a38d9;--ink:#e8f3fb;--mut:#9db8cc;--ln:#35566f}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;min-height:100%;font:15px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,var(--b1) 0%,var(--b1) 45%,var(--y1) 100%) fixed}
+.w{max-width:860px;margin:0 auto;padding:14px}
+h1{font:700 24px Georgia,serif;margin:0}h2{font:700 19px Georgia,serif;margin:14px 0 8px}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--red);margin-right:7px;animation:p 1.4s infinite}
+@keyframes p{to{box-shadow:0 0 0 12px #d6453d00}}@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+button,select,input,textarea{font:inherit;color:inherit}button{cursor:pointer}
+.btn{border:0;background:#1d6fa5;color:#fff;padding:9px 14px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block;margin:2px 0}
+.btn.y{background:var(--y2);color:#12324a}.btn.r{background:var(--red)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.tab{border:1px solid var(--ln);background:var(--card);padding:9px 14px;border-radius:999px;white-space:nowrap}.tab.on{background:var(--y2);color:#12324a;font-weight:700;border-color:var(--y2)}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0}
+.chip{border:1px solid var(--ln);background:var(--card);padding:7px 13px;border-radius:10px;margin:0 6px 6px 0}.chip.on{background:var(--b2);font-weight:700}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin:8px 0}
+.cell{background:var(--y1);border-radius:10px;padding:8px;text-align:center;border:2px solid transparent}.cell b{display:block;font-size:21px}.cell.hit{border-color:var(--grn)}
+.sub{color:var(--mut);font-size:13px}.ok{color:var(--grn);font-weight:700}.no{color:var(--red);font-weight:700}
+input,select,textarea{padding:9px 11px;border-radius:10px;border:1px solid var(--ln);background:var(--card);width:100%;color:var(--ink)}
+.btn:focus-visible,.chip:focus-visible,.tab:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1d6fa5;outline-offset:2px}
+.cnt{display:flex;align-items:center;gap:8px}.cnt button{width:38px;height:38px;border-radius:10px;border:1px solid var(--ln);background:var(--card);font-size:20px;font-weight:700}.cnt b{min-width:28px;text-align:center;font-size:20px}
+.tog{border:0;border-radius:999px;padding:8px 14px;font-weight:700;color:#fff}.tog.on{background:var(--grn)}.tog.off{background:var(--red)}
+.tok{background:var(--y2);color:#12324a;border-radius:12px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between}
+.alert{border-left:6px solid var(--red)}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}.modal.show{display:flex}
+.box{background:var(--b1);border:2px solid var(--y2);border-radius:16px;padding:18px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
+.msg{padding:6px 10px;border-radius:10px;margin:4px 0;max-width:85%}.msg.p{background:var(--y2);color:#12324a;margin-left:auto}.msg.h{background:var(--card)}
+svg text{fill:var(--ink);font:12px sans-serif}
+.badge{background:var(--red);color:#fff;border-radius:999px;padding:0 7px;font-size:12px;margin-left:4px}
+</style></head><body><div class="w">
+<div class="bar"><h1><span class="dot"></span>MedPulse</h1><span class="sub" id="who"></span></div>
+<div class="tabs" id="tabs"></div>
+<div id="app"></div></div>
+<div class="modal" id="m"><div class="box" id="mb"></div></div>
+<script>
+var $=function(s){return document.querySelector(s)};
+var GR=["A+","A-","B+","B-","AB+","AB-","O+","O-"];
+function bl(a){var o={};GR.forEach(function(g,i){o[g]=a[i]});return o}
+var H=[{n:"Apollo Greams Road",d:2.1,g:12,o:6,i:2,v:1,ice:1,av:1,ph:"+914428290200",bl:bl([8,1,6,2,3,0,9,1])},
+{n:"Govt General Hospital",d:3.4,g:30,o:10,i:0,v:0,ice:1,av:1,ph:"+914425305000",bl:bl([4,0,5,0,1,0,7,1])},
+{n:"Kauvery Alwarpet",d:4.8,g:5,o:2,i:4,v:2,ice:0,av:0,ph:"+914440006000",bl:bl([2,0,3,1,0,0,5,0])},
+{n:"MIOT International",d:7.2,g:18,o:8,i:3,v:1,ice:1,av:1,ph:"+914442000000",bl:bl([6,2,4,1,2,1,8,2])}];
+var TY=[["g","General bed"],["o","Oxygen bed"],["i","ICU bed"],["v","Ventilator"]];
+var SIG=[.2,.42,.65,.86];
+var S={p:"patient",ver:false,bg:"AB-",F:{g:"",need:1,t:{}},tok:[],chat:[[],[],[],[]],alerts:[],resp:[],desk:0,trip:null,pol:[],sg:[0,0,0,0],dest:0,pri:"Critical"};
+var K=0,T0=0;
+function render(){
+ var n=S.alerts.filter(function(a){return !a.seen}).length;
+ $("#tabs").innerHTML=[["patient","Patient portal"],["hospital","Hospital portal"],["amb","Ambulance portal"]].map(function(t){return '<button class="tab '+(S.p==t[0]?'on':'')+'" data-a="portal" data-v="'+t[0]+'">'+t[1]+(t[0]=="patient"&&n?'<span class="badge">'+n+'</span>':'')+'</button>'}).join("");
+ $("#who").textContent=S.ver?"Verified. Blood group "+S.bg:"Guest";
+ $("#app").innerHTML=(S.p=="login"?V.login():V[S.p]());upd();
+ if(S.p=="patient"&&n&&!S.shown){S.shown=1;alertM(S.alerts.filter(function(a){return !a.seen})[0])}
+}
+function M(h){$("#mb").innerHTML=h;$("#m").classList.add("show")}
+function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.07;o.start();setTimeout(function(){o.stop()},300)}catch(e){}}
+function need(cb){if(S.ver)return cb();S.after=cb;S.p="login";render()}
+function alertM(a){a.seen=1;S.shown=0;var match=a.g==S.bg;
+ M('<h2 style="margin-top:0;color:var(--red)">Urgent blood request</h2><p><b>'+H[a.h].n+'</b> needs <b>'+a.g+'</b>, '+a.u+' units, '+H[a.h].d+' km from you.</p>'+
+ (match?'<p class="ok">Your blood group '+S.bg+' matches.</p><label><input type="checkbox" id="tk" style="width:auto"> I confirm I can donate now (healthy, last donation over 90 days ago)</label><p><button class="btn" id="cb" data-a="donor" data-v="'+S.alerts.indexOf(a)+'" disabled>Contact hospital</button> <button class="btn y" data-a="cm">Not now</button></p>':
+ '<p class="no">Your blood group is '+S.bg+'. You are not a match for this request, so no action is needed.</p><button class="btn y" data-a="cm">Close</button>'));
+ var t=$("#tk");if(t)t.onchange=function(){$("#cb").disabled=!t.checked}}
+function chatHTML(i){return '<h2 style="margin-top:0">Chat: '+H[i].n+'</h2><div id="cl">'+(S.chat[i].length?S.chat[i].map(function(m){return '<div class="msg '+m.f+'">'+m.t+'</div>'}).join(""):'<p class="sub">Ask about beds, oxygen or blood units.</p>')+'</div><input id="ct" placeholder="Type a message"><p><button class="btn" data-a="send" data-v="'+i+'">Send</button> <button class="btn y" data-a="cm">Close</button></p>'}
+var V={
+login:function(){return '<h2>Verify your mobile</h2><div class="card"><p class="sub">Browsing is free. Chat, hold and ambulance need OTP.</p><input id="ph" inputmode="tel" placeholder="10-digit mobile number"><p class="sub">My blood group (used to match donor requests)</p><select id="bgs">'+GR.map(function(g){return '<option '+(g==S.bg?'selected':'')+'>'+g+'</option>'}).join("")+'</select><p class="sub">Demo OTP: 482913</p><input id="oc" inputmode="numeric" placeholder="6-digit OTP"><p id="er" class="no"></p><button class="btn" data-a="verify">Verify and continue</button> <button class="btn y" data-a="portal" data-v="patient">Back as guest</button></div>'},
+patient:function(){var F=S.F;
+ var tk=S.tok.map(function(k,i){return '<div class="tok"><span>'+k.l+' held at '+H[k.i].n+'</span><b id="tk'+i+'"></b></div>'}).join("");
+ var res=H.map(function(h,i){return [h,i]}).filter(function(p){var h=p[0];if(F.g&&h.bl[F.g]<F.need)return false;return Object.keys(F.t).every(function(k){return !F.t[k]||(k=="ice"||k=="av"?h[k]:h[k]>=F.need)})});
+ var al=S.alerts.length?'<div class="card alert"><b>Blood requests near you</b>'+S.alerts.map(function(a,i){return '<div class="row"><span>'+H[a.h].n+' needs '+a.g+' ('+a.u+' units)</span><button class="btn y" data-a="reopen" data-v="'+i+'">View</button></div>'}).join("")+'</div>':"";
+ return tk+al+'<h2>Search availability</h2><div class="card"><p class="sub">What do you need?</p>'+TY.concat([["ice","Ice storage"],["av","Antidote"]]).map(function(t){return '<button class="chip '+(F.t[t[0]]?'on':'')+'" data-a="ft" data-v="'+t[0]+'">'+t[1]+'</button>'}).join("")+
+ '<div class="row" style="align-items:flex-end"><div style="flex:1;min-width:120px"><span class="sub">Blood group</span><select id="fg"><option value="">Not needed</option>'+GR.map(function(g){return '<option '+(g==F.g?'selected':'')+'>'+g+'</option>'}).join("")+'</select></div><div style="flex:1;min-width:120px"><span class="sub">How many units or beds</span><input id="fn" type="number" min="1" value="'+F.need+'"></div></div></div>'+
+ '<h2>'+res.length+' hospital'+(res.length==1?'':'s')+' match</h2>'+(res.length?res.map(function(p){var h=p[0],i=p[1];return '<div class="card"><div class="row"><div><b>'+h.n+'</b><div class="sub">'+h.d+' km, updated 4 min ago</div></div></div><div class="grid">'+TY.map(function(t){return '<div class="cell '+(F.t[t[0]]?'hit':'')+'"><b class="'+(h[t[0]]?'':'no')+'">'+h[t[0]]+'</b><span class="sub">'+t[1]+'</span></div>'}).join("")+'<div class="cell '+(F.t.ice?'hit':'')+'"><b class="'+(h.ice?'ok':'no')+'">'+(h.ice?"Yes":"No")+'</b><span class="sub">Ice storage</span></div><div class="cell '+(F.t.av?'hit':'')+'"><b class="'+(h.av?'ok':'no')+'">'+(h.av?"Yes":"No")+'</b><span class="sub">Antidote</span></div><div class="cell '+(F.g?'hit':'')+'"><b class="'+(F.g&&h.bl[F.g]<F.need?'no':'')+'">'+(F.g?h.bl[F.g]:"-")+'</b><span class="sub">Blood '+(F.g||"")+' units</span></div></div>'+
+ '<button class="btn" data-a="chat" data-v="'+i+'">Chat with hospital</button> <a class="btn y" href="tel:'+h.ph+'">Call</a> <button class="btn y" data-a="hold" data-v="'+i+'">Hold a bed 15 min</button> <a class="btn y" target="_blank" rel="noopener" href="https://www.openstreetmap.org/search?query='+encodeURIComponent(h.n+" Chennai")+'">Directions</a></div>'}).join(""):'<div class="card alert">Nothing matches. Lower the quantity, remove a filter, or call 108.</div>')},
+hospital:function(){var x=H[S.desk];
+ var c=function(l,k){return '<div class="card row"><b>'+l+'</b><div class="cnt"><button aria-label="Decrease '+l+'" data-a="dm" data-v="'+k+',-1">-</button><b>'+x[k]+'</b><button aria-label="Increase '+l+'" data-a="dm" data-v="'+k+',1">+</button></div></div>'};
+ var t=function(l,k){return '<div class="card row"><b>'+l+'</b><button class="tog '+(x[k]?'on':'off')+'" data-a="dt" data-v="'+k+'">'+(x[k]?'AVAILABLE':'OUT OF STOCK')+'</button></div>'};
+ var rs=S.resp.filter(function(r){return r.h==S.desk});
+ return '<h2>Hospital admin</h2><select id="dh">'+H.map(function(h,i){return '<option value="'+i+'" '+(i==S.desk?'selected':'')+'>'+h.n+'</option>'}).join("")+'</select>'+
+ (S.trip&&S.trip.h==S.desk?'<div class="card alert" style="margin-top:10px"><b>Ambulance incoming</b> ('+S.trip.pri+') <b id="eta2"></b></div>':'')+
+ '<h2>Request blood</h2><div class="card"><div class="row"><select id="rg" style="flex:1">'+GR.map(function(g){return '<option '+(g=="AB-"?'selected':'')+'>'+g+'</option>'}).join("")+'</select><input id="ru" type="number" min="1" value="2" style="flex:1"></div><p class="sub">Nearby registered users get a pop-up. Only matching blood groups can tick and contact you.</p><button class="btn r" data-a="reqblood">Send blood request</button></div>'+
+ '<h2>Donors who can come</h2>'+(rs.length?rs.map(function(r){return '<div class="card row"><span><b>'+r.n+'</b> ('+r.g+') ticked: can donate</span><button class="btn y" data-a="hchat">Chat</button></div>'}).join(""):'<div class="card sub">No donor response yet.</div>')+
+ '<h2>Patient messages</h2>'+(S.chat[S.desk].length?'<div class="card">'+S.chat[S.desk].map(function(m){return '<div class="msg '+m.f+'">'+m.t+'</div>'}).join("")+'<input id="rp" placeholder="Reply to patient"><button class="btn" data-a="reply">Send reply</button></div>':'<div class="card sub">No messages yet.</div>')+
+ '<h2>Held beds</h2>'+(S.tok.filter(function(k){return k.i==S.desk}).map(function(k){return '<div class="card row"><span>'+k.l+' held, '+Math.floor(k.left/60)+' min left</span><button class="btn y" data-a="rel" data-v="'+S.tok.indexOf(k)+'">Release</button></div>'}).join("")||'<div class="card sub">None.</div>')+
+ '<h2>Update inventory</h2>'+c("General beds","g")+c("Oxygen beds","o")+c("ICU beds","i")+c("Ventilators","v")+t("Ice storage","ice")+t("Snake venom antidote","av")+
+ '<h2>Blood stock</h2><div class="grid">'+GR.map(function(g){return '<div class="cell"><b>'+g+': '+x.bl[g]+'</b><div class="cnt" style="justify-content:center"><button aria-label="Decrease '+g+'" data-a="bs" data-v="'+g+',-1">-</button><button aria-label="Increase '+g+'" data-a="bs" data-v="'+g+',1">+</button></div></div>'}).join("")+'</div>'},
+amb:function(){
+ if(!S.trip)return '<h2>Ambulance portal</h2><div class="card"><p class="sub">Choose destination hospital</p>'+H.map(function(h,i){return '<button class="chip '+(S.dest==i?'on':'')+'" data-a="dest" data-v="'+i+'">'+h.n+' (ICU '+h.i+')</button>'}).join("")+'<p class="sub">Patient priority</p>'+["Critical","Serious","Stable"].map(function(p){return '<button class="chip '+(S.pri==p?'on':'')+'" data-a="pri" data-v="'+p+'">'+p+'</button>'}).join("")+'<p><button class="btn r" data-a="start">Start trip</button></p><p class="sub">When you start, live GPS begins and an alarm goes to the traffic police automatically.</p></div>';
+ return '<h2>Trip to '+H[S.trip.h].n+'</h2><div class="card"><div class="row"><b id="eta" style="font-size:20px"></b><span class="sub">Hospital ER sees the same countdown</span></div>'+MAP()+'</div><div class="card alert"><b>Traffic police alarm</b><p class="sub">Sent automatically. Police clear junctions on their own.</p><ul class="sub" id="pl">'+S.pol.map(function(l){return '<li>'+l+'</li>'}).join("")+'</ul></div><button class="btn y" data-a="end">End trip</button>'}
+};
+function MAP(){return '<svg viewBox="0 0 600 220" width="100%" role="img" aria-label="Ambulance route with signals"><path id="r" d="M30 180 C120 180 120 60 210 60 S330 170 410 120 S520 40 570 50" fill="none" stroke="#1d6fa5" stroke-width="5" stroke-dasharray="2 10" stroke-linecap="round"/>'+SIG.map(function(s,i){return '<circle id="s'+i+'" r="7" fill="#d6453d"/><text id="t'+i+'">S'+(i+1)+'</text>'}).join("")+'<circle id="a" r="9" fill="#d6453d"/><text x="14" y="206">Pickup</text><text x="505" y="30">Hospital</text></svg>'}
+function upd(){
+ S.tok.forEach(function(k,i){var e=$("#tk"+i);if(e)e.textContent=Math.floor(k.left/60)+":"+("0"+k.left%60).slice(-2)});
+ var r=$("#r");if(r){var L=r.getTotalLength();SIG.forEach(function(s,i){var p=r.getPointAtLength(L*s),c=$("#s"+i);c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);$("#t"+i).setAttribute("x",p.x-8);$("#t"+i).setAttribute("y",p.y-12);c.setAttribute("fill",["#d6453d","#e0a800","#1f9d6a"][S.sg[i]])});var a=r.getPointAtLength(L*K);$("#a").setAttribute("cx",a.x);$("#a").setAttribute("cy",a.y)}
+ var t=S.trip?(K>=1?"Arrived":"ETA "+Math.ceil((1-K)*12)+" min"):"";["eta","eta2"].forEach(function(id){var e=$("#"+id);if(e)e.textContent=t})}
+setInterval(function(){var ch=0;S.tok=S.tok.filter(function(k){k.left--;if(k.left<=0){H[k.i][k.k]++;ch=1;return false}return true});if(ch)render();else upd()},1000);
+function plog(t){S.pol.unshift(new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})+" "+t);var u=$("#pl");if(u)u.innerHTML=S.pol.map(function(l){return '<li>'+l+'</li>'}).join("")}
+function run(){T0=performance.now();K=0;S.sg=[0,0,0,0];(function f(t){if(!S.trip)return;K=Math.min(1,(t-T0)/30000);
+ SIG.forEach(function(s,i){var n=K>s-.1?2:K>s-.25?1:0;if(n!=S.sg[i]){S.sg[i]=n;if(n==1)plog("Signal "+(i+1)+": police acknowledged alarm");if(n==2)plog("Signal "+(i+1)+": cleared ahead")}});
+ upd();if(K<1)requestAnimationFrame(f);else plog("Ambulance arrived at hospital")})(T0)}
+var A={
+portal:function(v){S.p=v;render()},cm:function(){$("#m").classList.remove("show")},
+verify:function(){if($("#ph").value.replace(/\D/g,"").length<10){$("#er").textContent="Enter a 10-digit mobile number.";return}if($("#oc").value!="482913"){$("#er").textContent="Wrong OTP. Demo code is 482913.";return}S.bg=$("#bgs").value;S.ver=true;S.p="patient";var f=S.after;S.after=null;render();if(f)f()},
+ft:function(v){S.F.t[v]=!S.F.t[v];render()},
+chat:function(v){need(function(){S.ci=+v;M(chatHTML(+v))})},
+send:function(v){var t=$("#ct").value.trim();if(!t)return;var i=+v;S.chat[i].push({f:"p",t:t});M(chatHTML(i));if(S.chat[i].length==1)setTimeout(function(){S.chat[i].push({f:"h",t:"Admin: Thanks, we have noted this. Please come now, we will keep it ready."});if($("#cl")&&S.ci==i)M(chatHTML(i))},1400)},
+hold:function(v){need(function(){var h=H[+v],k=h.i?"i":h.o?"o":h.g?"g":null;if(!k)return;h[k]--;S.tok.push({i:+v,k:k,l:{i:"ICU bed",o:"Oxygen bed",g:"General bed"}[k],left:900});render()})},
+reopen:function(v){alertM(S.alerts[+v])},
+donor:function(v){var a=S.alerts[+v];S.resp.push({h:a.h,n:"You",g:S.bg});S.chat[a.h].push({f:"p",t:"I am a "+S.bg+" donor and can come now."});S.ci=a.h;M(chatHTML(a.h))},
+dm:function(v){var a=v.split(",");H[S.desk][a[0]]=Math.max(0,H[S.desk][a[0]]+ +a[1]);render()},dt:function(v){H[S.desk][v]=H[S.desk][v]?0:1;render()},
+bs:function(v){var a=v.split(",");H[S.desk].bl[a[0]]=Math.max(0,H[S.desk].bl[a[0]]+ +a[1]);render()},
+rel:function(v){var k=S.tok.splice(+v,1)[0];H[k.i][k.k]++;render()},
+reqblood:function(){var g=$("#rg").value,u=$("#ru").value||1;S.alerts.unshift({h:S.desk,g:g,u:u,seen:0});beep();render();M('<h2 style="margin-top:0">Request sent</h2><p>Pop-up sent to nearby users and blood banks for <b>'+g+'</b>. Open the Patient portal to see how it appears.</p><button class="btn" data-a="cm">OK</button>')},
+hchat:function(){$("#mb").innerHTML=chatHTML(S.desk);$("#m").classList.add("show")},
+reply:function(){var t=$("#rp").value.trim();if(!t)return;S.chat[S.desk].push({f:"h",t:t});render()},
+dest:function(v){S.dest=+v;render()},pri:function(v){S.pri=v;render()},
+start:function(){need(function(){S.trip={h:S.dest,pri:S.pri};S.pol=[];beep();render();plog("ALARM sent to Traffic Police: "+S.pri+" ambulance to "+H[S.dest].n);run()})},
+end:function(){S.trip=null;K=0;render()}
+};
+document.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(b&&A[b.dataset.a])A[b.dataset.a](b.dataset.v)});
+document.addEventListener("change",function(e){var i=e.target.id;if(i=="fg"){S.F.g=e.target.value;render()}if(i=="fn"){S.F.need=Math.max(1,+e.target.value||1);render()}if(i=="dh"){S.desk=+e.target.value;render()}});
+render();
+</script></body></html>
